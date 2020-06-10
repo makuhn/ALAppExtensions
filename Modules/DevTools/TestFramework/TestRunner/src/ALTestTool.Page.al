@@ -1,3 +1,8 @@
+// ------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+// ------------------------------------------------------------------------------------------------
+
 page 130451 "AL Test Tool"
 {
     AccessByPermission = TableData "Test Method Line" = RIMD;
@@ -12,6 +17,7 @@ page 130451 "AL Test Tool"
     SaveValues = true;
     SourceTable = "Test Method Line";
     UsageCategory = Administration;
+    Permissions = TableData "AL Test Suite" = rimd, TableData "Test Method Line" = rimd;
 
     layout
     {
@@ -238,6 +244,25 @@ page 130451 "AL Test Tool"
                         CurrPage.Update(false);
                     end;
                 }
+                action(UpdateTests)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Update Test Methods';
+                    Image = RefreshLines;
+                    Promoted = true;
+                    PromotedCategory = Process;
+                    PromotedIsBig = true;
+                    PromotedOnly = true;
+                    ToolTip = 'Updates the test methods for the entire test suite.';
+
+                    trigger OnAction()
+                    var
+                        TestSuiteMgt: Codeunit "Test Suite Mgt.";
+                    begin
+                        TestSuiteMgt.UpdateTestMethods(Rec);
+                        CurrPage.Update(false);
+                    end;
+                }
             }
             group("Run Tests")
             {
@@ -304,6 +329,7 @@ page 130451 "AL Test Tool"
                         TestSuiteMgt: Codeunit "Test Suite Mgt.";
                     begin
                         TestSuiteMgt.LookupTestRunner(GlobalALTestSuite);
+                        TestRunnerDisplayName := TestSuiteMgt.GetTestRunnerDisplayName(GlobalALTestSuite);
                     end;
                 }
             }

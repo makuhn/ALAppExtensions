@@ -250,6 +250,7 @@ codeunit 58 "Filter Tokens Impl."
         Text1: Text;
         Text2: Text;
         RangeStartPosition: Integer;
+        DateFilterRangeLbl: Label '%1..%2', Comment = '%1 - From date, %2 - Till date', Locked = true;
     begin
         DateFilter := DelChr(DateFilter, '<>');
         if DateFilter = '' then
@@ -263,7 +264,7 @@ codeunit 58 "Filter Tokens Impl."
             if Date1 = Date2 then
                 DateFilter := Format(Date1)
             else
-                DateFilter := StrSubstNo('%1..%2', Date1, Date2);
+                DateFilter := StrSubstNo(DateFilterRangeLbl, Date1, Date2);
             exit;
         end;
 
@@ -291,6 +292,7 @@ codeunit 58 "Filter Tokens Impl."
             RemainderOfText := DateFilter;
             DateFilter := '';
         end else begin
+            ClearLastError(); // When Evaluate fails, the error shows up in 'View the last known error'
             Position := StrPos(DateFilter, '+');
             if Position = 0 then
                 Position := StrPos(DateFilter, '-');
