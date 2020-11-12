@@ -16,6 +16,7 @@ codeunit 9751 "Web Service Management Impl."
         WebServiceAlreadyPublishedErr: Label 'The web service name %1 already exists.  Enter a different service name.', Comment = '%1 = Web Service name';
         WebServiceNotAllowedErr: Label 'The web service cannot be added because it conflicts with an unpublished system web service for the object.';
         WebServiceModNotAllowedErr: Label 'The web service cannot be modified because it conflicts with an unpublished system web service for the object.';
+        ODataUnboundActionHelpUrlLbl: Label 'https://go.microsoft.com/fwlink/?linkid=2138827', Locked = true;
 
     procedure CreateWebService(ObjectType: Option; ObjectId: Integer; ObjectName: Text; Published: Boolean)
     var
@@ -88,8 +89,10 @@ codeunit 9751 "Web Service Management Impl."
                     case ClientTypeParam of
                         ClientTypeParam::SOAP:
                             exit(GetUrl(CLIENTTYPE::SOAP, CompanyName(), OBJECTTYPE::Codeunit, WebServiceAggregate."Object ID", WebService));
-                        else
+                        ClientTypeParam::ODataV3:
                             exit(NotApplicableTxt);
+                        ClientTypeParam::ODataV4:
+                            exit(ODataUnboundActionHelpUrlLbl);
                     end;
             end;
         end else begin
@@ -131,8 +134,10 @@ codeunit 9751 "Web Service Management Impl."
                     case ClientTypeParam of
                         ClientTypeParam::SOAP:
                             exit(GetUrl(CLIENTTYPE::SOAP, CompanyName(), OBJECTTYPE::Codeunit, WebServiceAggregate."Object ID", TenantWebService));
-                        else
+                        ClientTypeParam::ODataV3:
                             exit(NotApplicableTxt);
+                        ClientTypeParam::ODataV4:
+                            exit(ODataUnboundActionHelpUrlLbl);
                     end;
             end;
         end;
@@ -271,7 +276,6 @@ codeunit 9751 "Web Service Management Impl."
     var
         WebService: Record "Web Service";
         TenantWebService: Record "Tenant Web Service";
-        AllObj: Record AllObj;
     begin
         Rec.Reset();
         Rec.DeleteAll();
@@ -290,18 +294,17 @@ codeunit 9751 "Web Service Management Impl."
         if TenantWebService.FindSet() then
             repeat
                 Clear(WebService);
-                if AllObj.get(TenantWebService."Object Type", TenantWebService."Object ID") then
-                    if not WebService.Get(TenantWebService."Object Type", TenantWebService."Service Name") then begin
-                        WebService.SetRange("Object Type", TenantWebService."Object Type");
-                        WebService.SetRange("Object ID", TenantWebService."Object ID");
-                        WebService.SetRange(Published, false);
+                if not WebService.Get(TenantWebService."Object Type", TenantWebService."Service Name") then begin
+                    WebService.SetRange("Object Type", TenantWebService."Object Type");
+                    WebService.SetRange("Object ID", TenantWebService."Object ID");
+                    WebService.SetRange(Published, false);
 
-                        if WebService.IsEmpty() then begin
-                            Rec.Init();
-                            Rec.TransferFields(TenantWebService);
-                            Rec.Insert();
-                        end
+                    if WebService.IsEmpty() then begin
+                        Rec.Init();
+                        Rec.TransferFields(TenantWebService);
+                        Rec.Insert();
                     end
+                end
             until TenantWebService.Next() = 0;
     end;
 
